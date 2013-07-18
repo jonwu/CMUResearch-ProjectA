@@ -21,7 +21,8 @@ app.get('/', function(req, res) {
 });
 
 
-mongoose.connect('mongodb://209.129.244.25/speech-00');
+// mongoose.connect('mongodb://209.129.244.25/speech-00');
+mongoose.connect('mongodb://localhost/speech-00');
 var db = mongoose.connection;
 var buffer = "";
 var gfs;
@@ -58,7 +59,7 @@ db.once('open', function() {
   // });
   // insertAudio();
   // getAudio();
-  insertItem('test','test');
+  // insertItem('test','test');
 
 });
 

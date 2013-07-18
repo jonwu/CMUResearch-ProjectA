@@ -1,4 +1,5 @@
 var socket = io.connect('http://localhost');
+// var socket = io.connect('http://209.129.244.25');
 var currentItem;
 context = new webkitAudioContext();
 // on connection to server, ask for user's name with an anonymous callback
