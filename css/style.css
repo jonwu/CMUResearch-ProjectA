@@ -15,21 +15,36 @@ body{
 	min-width: 1024;
 
 }
-.text{
-	/*width: 96%;*/
-	border-bottom: 1px solid red;
-	padding: 2%;
-	font-weight: bold;
-	background:rgba(0,0,255,0.3);
-	
-}
-.info_wrapper{
+
+.filter{
+	padding: 20px;
 	max-width: 50%;
-	border: 1px solid black;
+	width: 410px;
+	height: 309px;
+	background-color: white;
+	border: 1px solid #CCC;
 	position: absolute;
 	z-index: 2;
-	right: 0;
+	left: 50px;
+	bottom: 35px;
+	-moz-box-shadow: 3px 3px 12px 1px #888;
+	-webkit-box-shadow: 3px 3px 12px 1px #888;
+	box-shadow: 3px 3px 12px 1px #888
 }
+.filter-header{
+	/*height: 20px;*/
+	margin-bottom: 5px;
+	width: 100%;
+}
+.filter-body{
+	width: 100%;
+}
+.dialog-info .time-info{
+	overflow: auto;
+	height: 200px;
+	margin-top: 15px;
+}
+
 .annotation{
 
 	width: 96%;
@@ -47,21 +62,25 @@ body{
 	display: inline;
 	
 }
+.marker{
+	/*width: 330px;*/
+	min-width: 300px;
+}
 .marker .time{
 	width: 30%;
 	float: left;
-	/*height: 100%;*/
 
 }
 .marker .transcript{
 	width: 70%;
 	float: right;
-	/*height: 100%;*/
 }
 .marker .message{
-	height: 20%;
-	padding-bottom: 2%;
-	padding-top: 2%;
+	height: 70px;
+	width: 100%;
+	/*width: 500px;*/
+	padding-bottom: 15px;
+	padding-top: 15px;
 	border-bottom: 1px solid gray;
 }
 .transcript span:hover {

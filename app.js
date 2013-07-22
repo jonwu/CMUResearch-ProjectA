@@ -10,10 +10,12 @@ var express = require('express'),
   fs = require('fs');
 
 var BSON = mongo.BSONPure;
-
+// var collection = "data";
+var collection = "HansTesting";
 server.listen(8080);
 app.use("/js", express.static(__dirname + '/js'));
 app.use("/css", express.static(__dirname + '/css'));
+app.use("/img", express.static(__dirname + '/img'));
 
 // app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', function(req, res) {
@@ -21,8 +23,8 @@ app.get('/', function(req, res) {
 });
 
 
-// mongoose.connect('mongodb://209.129.244.25/speech-00');
-mongoose.connect('mongodb://localhost/speech-00');
+mongoose.connect('mongodb://209.129.244.25/speech-00');
+// mongoose.connect('mongodb://localhost/speech-00');
 var db = mongoose.connection;
 var buffer = "";
 var gfs;
@@ -30,43 +32,13 @@ var gfs;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   console.log("mongoDB connected");
-  // gfs = Grid(db.db, mongoose.mongo);
-  // app.get('/download', function(req, res) {
-  //   // TODO: set proper mime type + filename, handle errors, etc...
-  //   var readStream = gfs.createReadStream({
-  //     filename: 'baby.mp3'
-  //   });
-  //   readStream.pipe(res);
-  // });
-
-  // readStream.on("data", function(chunk) {
-  //   buffer += chunk;
-  // });
-  // readStream.on("end", function() {
-  //   console.log("contents of file:\n\n", buffer);
-  //   // socket.emit("getAudio",buffer);
-  // });
-
-
-  // var writestream = gfs.createWriteStream({filename: 'baby.mp3'});
-  // fs.createReadStream('baby.mp3').pipe(writestream);
-  // fs.readFile("baby.mp3", function(err, original_data) {
-  //   var base64Image = original_data.toString('base64');
-  //   var decodedImage = new Buffer(base64Image, 'base64');
-  //   fs.writeFile('baby_new.mp3', decodedImage, function(err) {
-
-  //   });
-  // });
   // insertAudio();
-  // getAudio();
-  // insertItem('test','test');
-
 });
 
 var scheme = mongoose.Schema({
-  // ANNOTATION: Array,
+  ANNOTATION: Array,
   FILENAME: String,
-  USERID: Number,
+  USERID: String,
   INTERACTION: String,
   DATE: String,
   TIME: String,
@@ -76,14 +48,13 @@ var scheme = mongoose.Schema({
   AUDIO: String
 
 });
-var items = mongoose.model('items', scheme, 'data');
+var items = mongoose.model('items', scheme, collection);
 
 function insertAudio() {
   var object = {};
   items.find(object, function(error, items) {
     for (var i = 0; i < items.length; i++) {
       var filename = "audio/" + items[i].FILENAME;
-      // console.log(filename);
       insertFile(filename, items[i].FILENAME);
     }
   });
@@ -93,29 +64,55 @@ function insertAudio() {
 function insertFile(filename, name) {
   // console.log(filename);
   fs.readFile(filename, function(err, original_data) {
-    var base64Image = original_data.toString('base64');
-    var conditions = {
-      FILENAME: name
-    };
-    var update = {
-      $set: {
-        AUDIO: base64Image
-      }
-    };
-    var options = {
-      upsert: true
-    };
-    var callback = function(error) {
-      console.log("success");
-    };
-    items.update(conditions, update, options, callback);
+    console.log(original_data);
+    if (original_data) {
+      var base64Image = original_data.toString('base64');
+      // var data = new BSON.Binary(base64Image);
+      var conditions = {
+        FILENAME: name
+      };
+      var update = {
+        $set: {
+          AUDIO: base64Image
+        }
+      };
+      var options = {
+        upsert: true
+      };
+      var callback = function(error) {
+        console.log("success");
+      };
+      items.update(conditions, update, options, callback);
+    }
   });
 }
 
-function getAudio(cb) {
-  var object = {};
-  items.find(object, function(error, items) {
-    cb(items);
+function getTranscript(data, cb) {
+
+  var param = "AUDIO";
+  var object = {
+    _id: data
+  };
+  items.find(object, param).execFind(function(error, response) {
+    cb(response);
+  });
+}
+
+function getAudio(data, cb) {
+  var ids = [];
+  for (var i = 0; i < data.length; i++) {
+    ids.push(data[i]._id);
+  }
+  var param = "";
+  var object = {
+    _id: {
+      $in: ids
+    }
+  };
+  items.find(object, param).sort({
+    TIME: 1
+  }).execFind(function(error, response) {
+    cb(response);
   });
 }
 
@@ -168,12 +165,12 @@ function updateItems(item_name, item_type) {
 }
 
 function getAllItems(cb) {
-  items.find({}).sort({
+  var param = "-AUDIO";
+  items.find({}, param).sort({
     TIME: 1
   }).execFind(function(error, items) {
     cb(items);
   });
-  console.log("run updates");
 }
 
 function addAnnotation(data_name, data_type, data_field) {
@@ -201,30 +198,35 @@ function addAnnotation(data_name, data_type, data_field) {
   };
   items.update(conditions, update, options, callback);
 }
-// addAnnotation("sushi", "food", "4");
 
 io.sockets.on('connection', function(socket) {
+  
+  // Get all data when client starts
   socket.on('getAllData', function() {
     getAllItems(function(items) {
       socket.emit('setMarkers', items);
     });
-    getAudio(function(items) {
-      socket.emit('setAudio', items);
-    });
   });
-  // when the client emits 'sendchat', this listens and executes
+
+  // Deprecated
   socket.on('setWord', function(key) {
     getItem(key, function(item) {
       socket.emit('getWord', item);
     });
   });
 
-  // when the client emits 'adduser', this listens and executes
+  // Deprecated
   socket.on('updateItem', function(name, type) {
     updateItems(name, type);
   });
 
+  // Get an audio file back to client
+  socket.on('getAudio', function(item) {
+    getTranscript(item, function(items) {
+      socket.emit('setAudios', items[0].AUDIO);
+    });
+  });
 
-  // when the user disconnects.. perform this
   socket.on('disconnect', function() {});
+
 });

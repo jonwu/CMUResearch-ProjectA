@@ -13,12 +13,20 @@ function setMapPosition(lat, lng) {
 }
 
 function createMarker(lat, lng, info) {
-	console.log("+createPath");
+	// console.log("+createPath");
+	var radius = 0.05;
 	var pos = new google.maps.LatLng(lat, lng);
 	var exist = false;
 	var n = null;
 	for (var i = 0; i < markersArray.length; i++) {
-		if (pos.equals(markersArray[i].getPosition())) {
+		var mlat = markersArray[i].getPosition().lat();
+		var mlng = markersArray[i].getPosition().lng();
+		// console.log("haversine+", mlat);
+		// console.log("haversine+", mlng);
+		// console.log("haversine+", lat);
+		// console.log("haversine+", lng);
+		if (haversine(mlat, mlng, lat, lng, radius)) {
+			// if (pos.equals(markersArray[i].getPosition())) {
 			exist = true;
 			n = i;
 			break;
@@ -35,53 +43,59 @@ function createMarker(lat, lng, info) {
 		infoArray.push(info);
 		markersInfo.push(infoArray);
 	} else if (exist) {
-		console.log("exists!");
 		markersInfo[n].push(info);
-
 	}
 
 	return marker;
-	console.log("-createPath");
+	// console.log("-createPath");
 }
 
 function createInfoWindow(marker, info) {
-	console.log("info", info);
+	// console.log("info", info);
 	google.maps.event.addListener(marker, 'click', function() {
-		if (infowindow) infowindow.close();
-		infowindow = new google.maps.InfoWindow({
-			content: generateInfo(info),
-			maxWidth: 400
-		});
-		google.maps.event.addListener(infowindow, 'domready', function() {
-			// $(".transcript").lettering('words');
-			$('.transcript span').hover(function() {
-				var currWord = $(this).text();
-				console.log("word", currWord);
-			}, function() {});
-			$('.transcript span').on('click', function() {
-				if (phraseCtrl) {
-					if ($(this).hasClass('phase_selected')) {
-						$(this).removeClass('phase_selected');
-						$(this).removeClass('selected');
-					} else {
-						$(this).addClass('phase_selected');
-					}
-				} else {
-					if ($(this).hasClass('selected') || $(this).hasClass('phase_selected')) {
-						$(this).removeClass('selected');
-						$(this).removeClass('phase_selected');
-					} else {
-						$(this).addClass('selected');
-					}
-				}
-
-
-			});
-		});
-		// startLettering();
-		console.log(markersInfo);
-		infowindow.open(map, marker);
+		displayInfoWindow(marker, info);
 	});
+}
+
+function displayInfoWindow(marker, info) {
+	if (infowindow) infowindow.close();
+	infowindow = new google.maps.InfoWindow({
+		content: generateInfo(info),
+		maxWidth: 700
+	});
+	google.maps.event.addListener(infowindow, 'domready', function() {
+		// $(".transcript").lettering('words');
+		$('.transcript span').hover(function() {
+			var currWord = $(this).text();
+			console.log("word", currWord);
+		}, function() {});
+		$('.transcript span').on('click', function() {
+			if (phraseCtrl) {
+				if ($(this).hasClass('phase_selected')) {
+					$(this).removeClass('phase_selected');
+					$(this).removeClass('selected');
+				} else {
+					$(this).addClass('phase_selected');
+				}
+			} else {
+				if ($(this).hasClass('selected') || $(this).hasClass('phase_selected')) {
+					$(this).removeClass('selected');
+					$(this).removeClass('phase_selected');
+				} else {
+					$(this).addClass('selected');
+				}
+			}
+		});
+		$('.loading').on('click', function() {
+			currLoad = this;
+			var _id = $(this).attr('val');
+			socket.emit('getAudio', _id);
+
+		});
+	});
+	// startLettering();
+	console.log(markersInfo);
+	infowindow.open(map, marker);
 }
 
 function generateInfo(info) {
@@ -92,10 +106,10 @@ function generateInfo(info) {
 
 
 	for (var i = 0; i < info.length; i++) {
+
 		var transcriptSpan = "";
 		var words = [];
-		// console.log(info[i].AUDIO);
-		var src = "data:audio/wav;base64," + info[i].AUDIO;
+
 		if (info[i].TRANSCRIPT) {
 			words = info[i].TRANSCRIPT.split(' ');
 			words = addType(info[i], words)
@@ -111,16 +125,17 @@ function generateInfo(info) {
 			}
 		};
 		console.log("+words to string: ", transcriptSpan);
-		message += "<div class='message'><div class='time'>" + info[i].TIME + " - " + info[i].DATE + "</div>"
+		message += "<div class='message'><div class='time'>" + info[i].TIME + "<br>" + info[i].DATE
+		message += "<br><img class='loading' val='" + info[i]._id + "'src='img/load.svg' style='width: 50px' />";
+		message += "</div>";
 		message += "<div class='transcript'>" + transcriptSpan;
-		message += '<audio controls="controls" autobuffer="autobuffer" autoplay="autoplay"> <source class="source" src="' + src + '"/> </audio>';
+		// message += '<audio autobuffer="autobuffer" autoplay="autoplay"> <source class="source" src=""/> </audio>';
 		message += '</div></div>'
 
 	};
 
 	text = '<div class="marker">';
 	text += message;
-
 	text += '</div>';
 	return text;
 }
@@ -154,7 +169,7 @@ function initialize(lat, lng) {
 	console.log(lat);
 	console.log(lng);
 	var mapOptions = {
-		zoom: 13,
+		zoom: 4,
 		center: new google.maps.LatLng(lat, lng),
 		mapTypeId: google.maps.MapTypeId.ROADMAP
 	};
@@ -204,8 +219,18 @@ function haversine(nlat, nlong, mlat, mlong, distance) {
 	}
 }
 
+
 function rad(x) {
 	return x * Math.PI / 180;
+}
+function clearOverlays() {
+	markersInfo = [];
+	var size = markersArray.length;
+	for (var i = 0; i < size; i++) {
+		var marker = markersArray.pop();
+		marker.setMap(null);
+	}
+
 }
 
 google.maps.event.addDomListener(window, 'load', load)
