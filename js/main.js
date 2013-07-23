@@ -155,14 +155,55 @@ function setDialogList() {
 function setDialogInfo() {
 	var userID = $('.user-list').val();
 	var dialogID = $('.dialog-list option:selected').val();
-	$('.time-info').html('');
+	$('.dialog-info').html('');
 
 	if (dialogID != 'dialog-all') {
-		for (var i = 0; i < userList[userID][dialogID].length; i++) {
-			var items = userList[userID][dialogID][i];
-			var content = "<label for='content'>" + items.TIME + "</label>";
-			content += "<p>" + items.TRANSCRIPT + "</p>";
-			$('.time-info').append(content);
-		}
+		// for (var i = 0; i < userList[userID][dialogID].length; i++) {
+		var items = userList[userID][dialogID];
+		var content = generateInfo(items);
+
+		// console.log(content);
+		$('.dialog-info').append(content);
+		// var content = "<label for='content'>" + items.TIME + "</label>";
+		// content += "<p>" + items.TRANSCRIPT + "</p>";
+		// $('.time-info').append(content);
+		// }
 	}
 }
+
+$(".marker").livequery(function() {
+
+	$('.transcript span').hover(function() {
+		var currWord = $(this).text();
+		console.log("word", currWord);
+	}, function() {});
+	$('.transcript span').on('click', function() {
+		if (phraseCtrl) {
+			if ($(this).hasClass('phrase_selected')) {
+				$(this).removeClass('phrase_selected');
+				$(this).removeClass('selected');
+			} else {
+				$(this).addClass('phrase_selected');
+			}
+		} else {
+			if ($(this).hasClass('selected') || $(this).hasClass('phrase_selected')) {
+				$(this).removeClass('selected');
+				$(this).removeClass('phrase_selected');
+			} else {
+				$(this).addClass('selected');
+			}
+		}
+	});
+
+	$('.loading').on('click', function() {
+		currLoad = this;
+		var _id = $(this).attr('val');
+		socket.emit('getAudio', _id);
+	});
+
+	$('.subtype').on('click', function() {
+		// alert(1);
+
+	});
+
+});

@@ -39,7 +39,7 @@ body{
 .filter-body{
 	width: 100%;
 }
-.dialog-info .time-info{
+.dialog-info{
 	overflow: auto;
 	height: 200px;
 	margin-top: 15px;
@@ -89,19 +89,25 @@ body{
     color: black;
 }
 .transcript .location{
-	color: orange;
+	/*color: orange;*/
 	font-weight: bold;
 }
 .transcript .food{
-	color: green;
+	/*color: green;*/
 	font-weight: bold;
+}
+.transcript .type{
+	color: green;
+}
+.transcript .subtype{
+	color: red;
 }
 .selected{
 	background-color: rgba(255,255,0,0.5);
 	font-weight: bold;
 }
 
-.phase_selected{
+.phrase_selected{
 	background-color: rgba(0,255,0,0.5);
 	font-weight: bold;
 }

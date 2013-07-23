@@ -71,16 +71,16 @@ function displayInfoWindow(marker, info) {
 		}, function() {});
 		$('.transcript span').on('click', function() {
 			if (phraseCtrl) {
-				if ($(this).hasClass('phase_selected')) {
-					$(this).removeClass('phase_selected');
+				if ($(this).hasClass('phrase_selected')) {
+					$(this).removeClass('phrase_selected');
 					$(this).removeClass('selected');
 				} else {
-					$(this).addClass('phase_selected');
+					$(this).addClass('phrase_selected');
 				}
 			} else {
-				if ($(this).hasClass('selected') || $(this).hasClass('phase_selected')) {
+				if ($(this).hasClass('selected') || $(this).hasClass('phrase_selected')) {
 					$(this).removeClass('selected');
-					$(this).removeClass('phase_selected');
+					$(this).removeClass('phrase_selected');
 				} else {
 					$(this).addClass('selected');
 				}
@@ -140,6 +140,7 @@ function generateInfo(info) {
 	return text;
 }
 
+//Add annotations
 function addType(info, words) {
 	var wordsToSplice = [];
 	for (var k = 0; k < info.ANNOTATION.length; k++) {
@@ -148,6 +149,7 @@ function addType(info, words) {
 		var phrase = info.ANNOTATION[k].name.split(' ')
 
 		console.log("+phrase", phrase);
+		//More than one word (phrase)
 		for (var i = 1; i < phrase.length; i++) {
 			var end = position + 1;
 			words[position] += " " + words[end];
@@ -155,13 +157,14 @@ function addType(info, words) {
 			wordsToSplice.push(end);
 		};
 
-		words[position] = "<span class='" + type + "' val='" + position + "'>" + words[position] + "</span> "
+		words[position] = "<span class='" + type + " type' val='" + position + "'>" + words[position] + "</span>"+ " "+ "<sub contenteditable='true' class='subtype'>"+ type +" </sub>"
 	};
 	for (var n = 0; n < wordsToSplice.length; n++) {
 		words.splice(wordsToSplice[n] - n, 1);
 	};
 	return words;
 }
+
 
 
 function initialize(lat, lng) {
