@@ -1,209 +1,128 @@
-var phraseCtrl = false;
-$(document).ready(function() {
-
-	console.log("start lettering press --");
-	$(".word_split").lettering('words');
-	console.log("stop lettering press --");
-
-	$('.word_split span').hover(function() {
-		var currWord = $(this).text();
-		console.log("word", currWord);
-		socket.emit('setWord', currWord);
-	}, function() {});
-
-	$('.update').on("click", function() {
-		var name = $(".item_name").val();
-		var type = $(".item_type").val();
-		socket.emit('updateItem', name, type);
-	});
-});
-
-$(function() {
-	$(window).keydown(function(e) {
-		if (e.keyCode == 81 && e.shiftKey) {
-			$('.selected').each(function(index) {
-				console.log("selected", $(this).text());
-			});
-		} else if (e.keyCode == 87 && e.shiftKey) {
-
-		}
-		if (e.ctrlKey) {
-			phraseCtrl = true;
-		}
-	});
-	$(window).keyup(function(e) {
-
-		phraseCtrl = false;
-
-	});
-
-});
-
-$(document).ready(function() {
-	$(".user-list").change(function() {
-		setDialogList();
-		clearOverlays();
-
-		if ($(this).val() == 'user-all') {
-			showAllMarkers();
-		} else {
-			var userID = $('.user-list').val();
-			showAllDialogs(userID);
-		}
-		setInfoWindow();
-	});
-	$(".dialog-list").change(function() {
-		setDialogInfo();
-		clearOverlays();
-
-		if ($(this).val() == 'dialog-all') {
-			var userID = $('.user-list').val();
-			showAllDialogs(userID);
-		} else {
-			showDialog();
-		}
-		setInfoWindow();
-	});
-});
-
 function setInfoWindow() {
+	console.log('array length', markersArray.length);
 	for (var i = 0; i < markersArray.length; i++) {
 		createInfoWindow(markersArray[i], markersInfo[i]);
 	}
 }
 
-function showDialog() {
-	// clearOverlays();
-	var userID = $('.user-list').val();
-	var dialogID = $('.dialog-list option:selected').val();
+function showDialogOnMap(dialogItems) {
 
-	var dialogItems = userList[userID][dialogID];
 	for (var i = 0; i < dialogItems.length; i++) {
 		var lat = dialogItems[i].LATITUDE;
 		var lng = dialogItems[i].LONGITUDE;
 		var item = dialogItems[i];
 		createMarker(lat, lng, item);
 	};
-}
-
-function showAllMarkers() {
-	// clearOverlays();
-	for (var i = 0; i < userList.allUsers.length; i++) {
-		var userID = userList.allUsers[i];
-		console.log('all users', userID);
-		showAllDialogs(userID);
-	};
+	setInfoWindow();
 }
 
 function showAllDialogs(userID) {
-
-	if (userList[userID]) {
-		for (var j = 0; j < userList[userID].dialogList.length; j++) {
-			var dialogID = userList[userID].dialogList[j];
-			var items = userList[userID][dialogID];
-			for (var k = 0; k < items.length; k++) {
-				createMarker(items[k].LATITUDE, items[k].LONGITUDE, items[k]);
-			};
-		};
-	}
+	socket.emit('getUserInfo', userID);
 }
 
-function setList(userID, dialogID, items) {
-
-	var dialogID = dialogID.replace(/[^a-zA-Z 0-9]+/g, '');
-	// console.log('id----', dialogID);
-	if (userList[userID]) {
-		//UserID exists
-		if (!userList[userID][dialogID]) {
-			userList[userID][dialogID] = [];
-			userList[userID].dialogList.push(dialogID);
-		}
-		userList[userID][dialogID].push(items);
-
-	} else {
-		//New userID
-		userList.allUsers.push(userID);
-		userList[userID] = {};
-		userList[userID].dialogList = []
-		userList[userID].dialogList.push(dialogID);
-		userList[userID][dialogID] = [];
-		userList[userID][dialogID].push(items);
-
-		var content = "<option value='" + userID + "'>" + userID + "</option>";
+function setUserList(items) {
+	$('.user-option').remove();
+	for (var i = 0; i < items.length; i++) {
+		var userID = items[i];
+		var content = "<option class='user-option' value='" + userID + "'>User" + (i + 1) + "</option>";
 		$('.user-list').append(content);
-
-		console.log('user-list values', $('.user-list').val());
-	}
+	};
 }
 
-function setDialogList() {
-
-	var userID = $('.user-list').val();
+function setDialogList(items) {
 	$('.dialog-option').remove();
-	if (userList[userID]) {
-		for (var i = 0; i < userList[userID].dialogList.length; i++) {
-			// var dialogID = "";
-			var dialogID = userList[userID].dialogList[i];
-
-			var content = "<option class='dialog-option' value='" + dialogID + "'>" + dialogID + "</option>";
-			$('.dialog-list').append(content);
-		};
-	}
+	for (var i = 0; i < items.length; i++) {
+		var dialogID = items[i];
+		var content = "<option class='dialog-option' value='" + dialogID + "'> Dialog " + (i + 1) + "</option>";
+		$('.dialog-list').append(content);
+	};
 	setDialogInfo();
 }
 
 function setDialogInfo() {
+
 	var userID = $('.user-list').val();
 	var dialogID = $('.dialog-list option:selected').val();
 	$('.dialog-info').html('');
-
 	if (dialogID != 'dialog-all') {
-		// for (var i = 0; i < userList[userID][dialogID].length; i++) {
-		var items = userList[userID][dialogID];
-		var content = generateInfo(items);
-
-		// console.log(content);
-		$('.dialog-info').append(content);
-		// var content = "<label for='content'>" + items.TIME + "</label>";
-		// content += "<p>" + items.TRANSCRIPT + "</p>";
-		// $('.time-info').append(content);
-		// }
+		console.log("d-log", dialogID);
+		socket.emit('getDialogInfo', userID, dialogID)
 	}
 }
 
-$(".marker").livequery(function() {
+function setAudio(audio, loop) {
+	console.log('loop', loop);
+	var src = "data:audio/wav;base64," + audio;
+	$('.audio').attr('src', src);
 
-	$('.transcript span').hover(function() {
-		var currWord = $(this).text();
-		console.log("word", currWord);
-	}, function() {});
-	$('.transcript span').on('click', function() {
-		if (phraseCtrl) {
-			if ($(this).hasClass('phrase_selected')) {
-				$(this).removeClass('phrase_selected');
-				$(this).removeClass('selected');
-			} else {
-				$(this).addClass('phrase_selected');
-			}
-		} else {
-			if ($(this).hasClass('selected') || $(this).hasClass('phrase_selected')) {
-				$(this).removeClass('selected');
-				$(this).removeClass('phrase_selected');
-			} else {
-				$(this).addClass('selected');
-			}
+	setActiveMarker();
+	console.log($(currLoad).children());
+	$('.message').removeClass('audio-active');
+	$(currLoad).addClass('audio-active');
+	stopAudio();
+
+	if (loop) {
+		autoScoll();
+		currLoad = $(currLoad).next();
+
+		if (currLoad.length) {
+			$('.audio').bind('ended', function() {
+				var _id = $(currLoad).attr('val');
+				socket.emit('getAudio', _id, true);
+				$('.audio').unbind('ended');
+			});
+		} else { //Last Audio played
+			$('.audio').bind('ended', function() {
+				markersArray[prevIndex].setIcon('../img/non-active.png');
+			});
 		}
+	}
+}
+
+function stopAudio() {
+	$('.audio').bind('ended', function() {
+		markersArray[prevIndex].setIcon('../img/non-active.png');
+		$('.audio').unbind('ended');
 	});
+	
+}
 
-	$('.loading').on('click', function() {
-		currLoad = this;
-		var _id = $(this).attr('val');
-		socket.emit('getAudio', _id);
-	});
+var prevIndex = 0;
 
-	$('.subtype').on('click', function() {
-		// alert(1);
+function setActiveMarker() {
+	markersArray[prevIndex].setIcon('../img/non-active.png');
+	var index = $(currLoad).children('.loading').attr('val');
+	markersArray[index].setIcon('../img/active.png');
+	prevIndex = index;
+	var lat = markersArray[index].getPosition().lat()
+	var lng = markersArray[index].getPosition().lng()
+	var pos = new google.maps.LatLng(lat, lng);
+	// var bounds = new google.maps.LatLngBounds(pos,pos)
+	map.panTo(pos);
 
-	});
+	var currZoom = map.getZoom();
+	// alert(currZoom)
+	if (currZoom < 13) {
+		map.setZoom(13);
+	}
+}
 
-});
+function setInfo(items) {
+	content = generateInfo(items, 'main');
+	var date = new Date(items[0].TIME);
+	$('.dialog-time').text(date.toString());
+	$('.dialog-info').append(content);
+}
+
+function setReverseInfo(items) {
+	content = generateReverseInfo(items, 'main');
+	var date = new Date(items[items.length - 1].TIME);
+	$('.dialog-time').text(date.toString());
+	$('.dialog-info').append(content);
+}
+
+function autoScoll() {
+	scrollHeight = $('.audio-active').position().top - $('.dialog-info').position().top + $('.dialog-info').scrollTop();
+	console.log('hieght', scrollHeight);
+	$('.dialog-info').scrollTop(scrollHeight);
+}

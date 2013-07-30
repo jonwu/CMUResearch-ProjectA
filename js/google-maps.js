@@ -3,6 +3,7 @@ var map;
 var geocoder;
 var markersArray = [];
 var markersInfo = [];
+var dialogArray = [];
 
 function load() {
 	navigator.geolocation.getCurrentPosition(userLocation, error);
@@ -14,19 +15,14 @@ function setMapPosition(lat, lng) {
 
 function createMarker(lat, lng, info) {
 	// console.log("+createPath");
-	var radius = 0.05;
+	var radius = 0.03;
 	var pos = new google.maps.LatLng(lat, lng);
 	var exist = false;
 	var n = null;
 	for (var i = 0; i < markersArray.length; i++) {
 		var mlat = markersArray[i].getPosition().lat();
 		var mlng = markersArray[i].getPosition().lng();
-		// console.log("haversine+", mlat);
-		// console.log("haversine+", mlng);
-		// console.log("haversine+", lat);
-		// console.log("haversine+", lng);
 		if (haversine(mlat, mlng, lat, lng, radius)) {
-			// if (pos.equals(markersArray[i].getPosition())) {
 			exist = true;
 			n = i;
 			break;
@@ -34,24 +30,27 @@ function createMarker(lat, lng, info) {
 	};
 
 	if (!exist) {
-		var infoArray = []
+		var infoArray = [];
 		var marker = new google.maps.Marker({
 			map: map,
 			position: pos,
 		});
-		markersArray.push(marker);
+		marker.setIcon('../img/non-active.png');
+		markersArray.push(marker); //All Markers
+		n = markersArray.length - 1;
+		info.index = n;
 		infoArray.push(info);
 		markersInfo.push(infoArray);
 	} else if (exist) {
-		markersInfo[n].push(info);
+		info.index = n
+		markersInfo[n].push(info); //For InfoWindow
 	}
-
+	dialogArray.push(info)
 	return marker;
 	// console.log("-createPath");
 }
 
 function createInfoWindow(marker, info) {
-	// console.log("info", info);
 	google.maps.event.addListener(marker, 'click', function() {
 		displayInfoWindow(marker, info);
 	});
@@ -60,88 +59,163 @@ function createInfoWindow(marker, info) {
 function displayInfoWindow(marker, info) {
 	if (infowindow) infowindow.close();
 	infowindow = new google.maps.InfoWindow({
-		content: generateInfo(info),
+		content: generateMapInfo(info, 'map'),
 		maxWidth: 700
 	});
 	google.maps.event.addListener(infowindow, 'domready', function() {
-		// $(".transcript").lettering('words');
-		$('.transcript span').hover(function() {
-			var currWord = $(this).text();
-			console.log("word", currWord);
-		}, function() {});
-		$('.transcript span').on('click', function() {
-			if (phraseCtrl) {
-				if ($(this).hasClass('phrase_selected')) {
-					$(this).removeClass('phrase_selected');
-					$(this).removeClass('selected');
-				} else {
-					$(this).addClass('phrase_selected');
-				}
-			} else {
-				if ($(this).hasClass('selected') || $(this).hasClass('phrase_selected')) {
-					$(this).removeClass('selected');
-					$(this).removeClass('phrase_selected');
-				} else {
-					$(this).addClass('selected');
-				}
-			}
-		});
-		$('.loading').on('click', function() {
-			currLoad = this;
-			var _id = $(this).attr('val');
-			socket.emit('getAudio', _id);
-
+		$('.map-loading').on('click', function() {
+			$('.audio-active').removeClass('audio-active');
+			currLoad = $(this).parents('.map-message');
+			currLoad.addClass('audio-active');
+			var _id = $(currLoad).attr('val');
+			socket.emit('getAudio', _id, false);
 		});
 	});
-	// startLettering();
-	console.log(markersInfo);
 	infowindow.open(map, marker);
 }
 
-function generateInfo(info) {
+function generateInfo(info, header) {
 	console.log("+generateInfo");
-	var text;
+	var text = "";
 	var message = "";
 	var transcriptArray;
 
-
 	for (var i = 0; i < info.length; i++) {
-
-		var transcriptSpan = "";
-		var words = [];
-
-		if (info[i].TRANSCRIPT) {
-			words = info[i].TRANSCRIPT.split(' ');
-			words = addType(info[i], words)
-		}
-
-		console.log("+words array", words);
-
-		for (var j = 0; j < words.length; j++) {
-			if (words[j].indexOf("</span>") == -1) {
-				transcriptSpan += "<span val='" + j + "'>" + words[j] + "</span> "
-			} else {
-				transcriptSpan += words[j]
-			}
-		};
-		console.log("+words to string: ", transcriptSpan);
-		message += "<div class='message'><div class='time'>" + info[i].TIME + "<br>" + info[i].DATE
-		message += "<br><img class='loading' val='" + info[i]._id + "'src='img/load.svg' style='width: 50px' />";
-		message += "</div>";
-		message += "<div class='transcript'>" + transcriptSpan;
-		// message += '<audio autobuffer="autobuffer" autoplay="autoplay"> <source class="source" src=""/> </audio>';
-		message += '</div></div>'
-
-	};
-
-	text = '<div class="marker">';
+		message += generateMessage(info[i], header);
+	}
+	text = '<div class="' + header + '-marker marker">';
 	text += message;
 	text += '</div>';
 	return text;
 }
 
+function generateMapInfo(info, header) {
+	console.log("+generateInfo");
+	var text = "";
+	var message = "";
+	var transcriptArray;
+
+	for (var i = 0; i < info.length; i++) {
+		message += generateMapMessage(info[i], header);
+	}
+	text = '<div class="' + header + '-marker marker">';
+	text += message;
+	text += '</div>';
+	return text;
+}
+
+function generateReverseInfo(info, header) {
+	var text = "";
+	var message = "";
+	var transcriptArray;
+
+	for (var i = info.length - 1; i > -1; i--) {
+		message += generateMessage(info[i], header);
+	}
+	text = '<div class="' + header + '-marker marker">';
+	text += message;
+	text += '</div>';
+	return text;
+}
+
+function generateMessage(info, header) {
+
+	var message = "";
+	var transcriptSpan = "";
+	var words = [];
+
+	if (info.TRANSCRIPT) {
+		words = info.TRANSCRIPT.split(' ');
+		words = addType(info, words, header)
+	}
+
+	// console.log("+words array", words);
+
+	for (var j = 0; j < words.length; j++) {
+		if (words[j].indexOf("</span>") == -1) {
+			transcriptSpan += "<span val='" + j + "'>" + words[j] + "</span> "
+		} else {
+			transcriptSpan += words[j]
+		}
+	};
+	// console.log("+words to string: ", transcriptSpan);
+
+	message += "<div class='" + header + "-message message' val='" + info._id + "'>";
+
+	message += "<div class='loading' val='" + info.index + "'>"
+	message += "<img class='" + header + "-loading' src='img/playlist.svg' style='width: 25px' />";
+	message += "<img class='" + header + "-play' src='img/play.svg' style='width: 28px' />";
+	message += '</div>'
+
+	message += "<div contenteditable='true' class='" + header + "-transcript transcript'>" + transcriptSpan;
+	message += '</div>'
+
+
+	var pending = '<input name="' + info._id + '" value="pending" type="radio">'
+	var processing = '<input name="' + info._id + '" value="processing" type="radio">'
+	var verified = '<input name="' + info._id + '" value="verified" type="radio">'
+
+	if (info.STATUS == 'pending') {
+		pending = '<input name="' + info._id + '" value="pending" type="radio" checked>'
+	} else if (info.STATUS == 'processing') {
+		processing = '<input name="' + info._id + '" value="processing" type="radio" checked>'
+	} else if (info.STATUS == 'verified') {
+		verified = '<input name="' + info._id + '" value="verified" type="radio" checked>'
+	} else {
+		pending = '<input name="' + info._id + '" value="pending" type="radio" checked>'
+	}
+	
+	message += "<div class='checkbox'>"
+	message += pending
+	message += '<label for="check">Pending</label><br>'
+	message += processing
+	message += '<label for="check">Processing</label><br>'
+	message += verified
+	message += '<label for="check">Verified</label>'
+	message += '</div>'
+
+	message += '</div>'
+	return message;
+}
+
+function generateMapMessage(info, header) {
+	var message = "";
+	var transcriptSpan = "";
+	var words = [];
+
+	if (info.TRANSCRIPT) {
+		words = info.TRANSCRIPT.split(' ');
+		words = addType(info, words, header)
+	}
+
+	// console.log("+words array", words);
+
+	for (var j = 0; j < words.length; j++) {
+		if (words[j].indexOf("</span>") == -1) {
+			transcriptSpan += "<span val='" + j + "'>" + words[j] + "</span> "
+		} else {
+			transcriptSpan += words[j]
+		}
+	};
+	// console.log("+words to string: ", transcriptSpan);
+
+	message += "<div class='" + header + "-message message' val='" + info._id + "'>";
+
+	message += "<div class='loading' val='" + info.index + "' style='width: 20%'>"
+	message += "<img class='" + header + "-loading' src='img/play.svg' style='width: 25px' />";
+	// message += "<img class='" + header + "-play' src='img/play.svg' style='width: 28px' />";
+	message += '</div>'
+
+	message += "<div contenteditable='true' class='" + header + "-transcript transcript' style='width: 80%'>" + transcriptSpan;
+	message += '</div>'
+
+	message += '</div>'
+	return message;
+}
+
 //Add annotations
-function addType(info, words) {
+
+function addType(info, words, header) {
 	var wordsToSplice = [];
 	for (var k = 0; k < info.ANNOTATION.length; k++) {
 		var position = info.ANNOTATION[k].position;
@@ -157,10 +231,12 @@ function addType(info, words) {
 			wordsToSplice.push(end);
 		};
 
-		words[position] = "<span class='" + type + " type' val='" + position + "'>" + words[position] + "</span>"+ " "+ "<sub contenteditable='true' class='subtype'>"+ type +" </sub>"
+		words[position] = "<span class='" + type + " type' val='" + position + "'>" + words[position] + "</span>"
+		words[position] += " " + "<sub contenteditable='false' val='" + info._id + "' class='subtype'>" + type + " </sub>"
 	};
 	for (var n = 0; n < wordsToSplice.length; n++) {
 		words.splice(wordsToSplice[n] - n, 1);
+
 	};
 	return words;
 }
@@ -172,7 +248,7 @@ function initialize(lat, lng) {
 	console.log(lat);
 	console.log(lng);
 	var mapOptions = {
-		zoom: 4,
+		zoom: 12,
 		center: new google.maps.LatLng(lat, lng),
 		mapTypeId: google.maps.MapTypeId.ROADMAP
 	};
@@ -226,7 +302,10 @@ function haversine(nlat, nlong, mlat, mlong, distance) {
 function rad(x) {
 	return x * Math.PI / 180;
 }
+
 function clearOverlays() {
+	$('.audio').unbind('ended');
+	dialogArray = [];
 	markersInfo = [];
 	var size = markersArray.length;
 	for (var i = 0; i < size; i++) {
