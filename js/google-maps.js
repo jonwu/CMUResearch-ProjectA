@@ -104,20 +104,6 @@ function generateMapInfo(info, header) {
 	return text;
 }
 
-function generateReverseInfo(info, header) {
-	var text = "";
-	var message = "";
-	var transcriptArray;
-
-	for (var i = info.length - 1; i > -1; i--) {
-		message += generateMessage(info[i], header);
-	}
-	text = '<div class="' + header + '-marker marker">';
-	text += message;
-	text += '</div>';
-	return text;
-}
-
 function generateMessage(info, header) {
 
 	var message = "";
@@ -164,7 +150,7 @@ function generateMessage(info, header) {
 	} else {
 		pending = '<input name="' + info._id + '" value="pending" type="radio" checked>'
 	}
-	
+
 	message += "<div class='checkbox'>"
 	message += pending
 	message += '<label for="check">Pending</label><br>'
@@ -241,10 +227,7 @@ function addType(info, words, header) {
 	return words;
 }
 
-
-
 function initialize(lat, lng) {
-	// socket.emit("setLatLng", lat, lng);
 	console.log(lat);
 	console.log(lng);
 	var mapOptions = {
@@ -260,26 +243,6 @@ function initialize(lat, lng) {
 	socket.emit("getAllData");
 
 }
-
-function codeAddress(place) {
-
-	var address = place;
-
-	geocoder.geocode({
-		'address': address
-	}, function(results, status) {
-		if (status == google.maps.GeocoderStatus.OK) {
-			map.setCenter(results[0].geometry.location);
-			var marker = new google.maps.Marker({
-				map: map,
-				position: results[0].geometry.location
-			});
-		} else {
-			alert("Geocode was not successful for the following reason: " + status);
-		}
-	});
-}
-
 
 function haversine(nlat, nlong, mlat, mlong, distance) {
 

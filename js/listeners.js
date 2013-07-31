@@ -25,34 +25,73 @@ $(document).ready(function() {
 		socket.emit('getDialogList', userID);
 
 		if ($(this).val() == 'user-all') {
-			socket.emit("getAllData");
+			filterUserID = {
+				$exists: true
+			};
 		} else {
-			showAllDialogs(userID);
+			filterUserID = userID;
 		}
+		filterDialogID = {
+			$exists: true
+		};
+		getData();
+
 	});
 	$(".dialog-list").change(function() {
 		clearOverlays();
-		setDialogInfo();
+		var dialogID = $('.dialog-list').val();
 
 		if ($(this).val() == 'dialog-all') {
 			var userID = $('.user-list').val();
-			showAllDialogs(userID);
+			filterDialogID = {
+				$exists: true
+			};
+		} else {
+			filterDialogID = dialogID;
 		}
-
+		getData();
 	});
-	
+
 	$('.reverse:checkbox').change(
 		function() {
 			if ($(this).is(':checked')) {
-				stopAudio();
-				$('.dialog-info').html('');
-				setReverseInfo(dialogArray);
+				reverse = -1;
 			} else {
-				stopAudio();
-				$('.dialog-info').html('');
-				setInfo(dialogArray);
+				reverse = 1;
 			}
+			getData();
 		});
+	$('input:checkbox').change(
+		function() {
+			if ($(this).val() == 'Pending') {
+				if ($(this).is(':checked'))
+					statusArray.push('pending');
+				else {
+					var index = statusArray.indexOf('pending');
+					statusArray.splice(index, 1);
+				}
+			} else if ($(this).val() == 'Processing') {
+				if ($(this).is(':checked'))
+					statusArray.push('processing');
+				else {
+					var index = statusArray.indexOf('processing');
+					statusArray.splice(index, 1);
+				}
+			} else if ($(this).val() == 'Verified') {
+				if ($(this).is(':checked'))
+					statusArray.push('verified');
+				else {
+					var index = statusArray.indexOf('verified');
+					statusArray.splice(index, 1);
+				}
+			}
+			getData();
+		});
+	$('input:radio').change(function() {
+		var id = $(this).attr('name');
+		var value = $(this).val();
+		socket.emit('updateStatus', id, value);
+	});
 	$('.type-add').on('click', function() {
 		$('.selected').each(function(index) {
 
@@ -67,12 +106,12 @@ $(document).ready(function() {
 });
 
 $(".main-marker").livequery(function() {
-	$('input:radio').change(function(){
+	$('input:radio').change(function() {
 		var id = $(this).attr('name');
 		var value = $(this).val();
 		console.log(id);
 		console.log(value);
-		socket.emit('updateStatus', id, value); 
+		socket.emit('updateStatus', id, value);
 	});
 	$('.main-transcript span').hover(function() {
 		var currWord = $(this).text();
@@ -100,7 +139,7 @@ $(".main-marker").livequery(function() {
 
 		$('.audio-active').removeClass('audio-active');
 		currLoad = $(this).parents('.message');
-		console.log('curload', currLoad);
+		// console.log('curload', currLoad);
 		var _id = $(currLoad).attr('val');
 		socket.emit('getAudio', _id, true);
 	});
@@ -141,6 +180,4 @@ $(".main-marker").livequery(function() {
 			setActiveMarker();
 		}
 	});
-
-
 });

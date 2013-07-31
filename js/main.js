@@ -1,5 +1,4 @@
 function setInfoWindow() {
-	console.log('array length', markersArray.length);
 	for (var i = 0; i < markersArray.length; i++) {
 		createInfoWindow(markersArray[i], markersInfo[i]);
 	}
@@ -14,10 +13,6 @@ function showDialogOnMap(dialogItems) {
 		createMarker(lat, lng, item);
 	};
 	setInfoWindow();
-}
-
-function showAllDialogs(userID) {
-	socket.emit('getUserInfo', userID);
 }
 
 function setUserList(items) {
@@ -36,19 +31,8 @@ function setDialogList(items) {
 		var content = "<option class='dialog-option' value='" + dialogID + "'> Dialog " + (i + 1) + "</option>";
 		$('.dialog-list').append(content);
 	};
-	setDialogInfo();
 }
 
-function setDialogInfo() {
-
-	var userID = $('.user-list').val();
-	var dialogID = $('.dialog-list option:selected').val();
-	$('.dialog-info').html('');
-	if (dialogID != 'dialog-all') {
-		console.log("d-log", dialogID);
-		socket.emit('getDialogInfo', userID, dialogID)
-	}
-}
 
 function setAudio(audio, loop) {
 	console.log('loop', loop);
@@ -56,10 +40,9 @@ function setAudio(audio, loop) {
 	$('.audio').attr('src', src);
 
 	setActiveMarker();
-	console.log($(currLoad).children());
 	$('.message').removeClass('audio-active');
 	$(currLoad).addClass('audio-active');
-	stopAudio();
+	$('.audio').unbind('ended');
 
 	if (loop) {
 		autoScoll();
@@ -84,10 +67,8 @@ function stopAudio() {
 		markersArray[prevIndex].setIcon('../img/non-active.png');
 		$('.audio').unbind('ended');
 	});
-	
-}
 
-var prevIndex = 0;
+}
 
 function setActiveMarker() {
 	markersArray[prevIndex].setIcon('../img/non-active.png');
@@ -109,15 +90,10 @@ function setActiveMarker() {
 
 function setInfo(items) {
 	content = generateInfo(items, 'main');
-	var date = new Date(items[0].TIME);
-	$('.dialog-time').text(date.toString());
-	$('.dialog-info').append(content);
-}
-
-function setReverseInfo(items) {
-	content = generateReverseInfo(items, 'main');
-	var date = new Date(items[items.length - 1].TIME);
-	$('.dialog-time').text(date.toString());
+	if (items.length) {
+		var date = new Date(items[0].TIME);
+		$('.dialog-time').text(date.toString());
+	}
 	$('.dialog-info').append(content);
 }
 
@@ -125,4 +101,32 @@ function autoScoll() {
 	scrollHeight = $('.audio-active').position().top - $('.dialog-info').position().top + $('.dialog-info').scrollTop();
 	console.log('hieght', scrollHeight);
 	$('.dialog-info').scrollTop(scrollHeight);
+}
+
+function getData() {
+	var id = filterUserID
+	var interaction = filterDialogID;
+	var status;
+
+	if (!statusArray.length) {
+		status = {
+			$exists: true
+		}
+	} else {
+		status = {
+			$in: statusArray
+		}
+	}
+
+	console.log('id', id);
+	console.log('interaction', interaction);
+	console.log('status', status);
+
+	var conditions = {
+		STATUS: status,
+		USERID: id,
+		INTERACTION: interaction
+	}
+	var order = reverse;
+	socket.emit('getData', conditions, order);
 }

@@ -6,10 +6,8 @@
     io = require('socket.io').listen(server),
     mongo = require('mongodb'),
     mongoose = require('mongoose'),
-    Grid = require('gridfs-stream'),
     fs = require('fs');
 
-  var BSON = mongo.BSONPure;
 
   // var collection = "data";
   var collection = "HansTesting3";
@@ -28,9 +26,6 @@
 
 
   var db = mongoose.connection;
-  var buffer = "";
-  var gfs;
-
   db.on('error', console.error.bind(console, 'connection error:'));
   db.once('open', function() {
     console.log("mongoDB connected");
@@ -102,52 +97,6 @@
       //     console.log(err);
       // });
       cb(response);
-    });
-  }
-
-  function getAudio(data, cb) {
-    var ids = [];
-    for (var i = 0; i < data.length; i++) {
-      ids.push(data[i]._id);
-    }
-    var param = "";
-    var object = {
-      _id: {
-        $in: ids
-      }
-    };
-    items.find(object, param).sort({
-      TIME: 1
-    }).execFind(function(error, response) {
-      cb(response);
-    });
-  }
-
-
-  function insertItem(nameItem, foodItem) {
-
-    var object = {
-      DATE: nameItem,
-      TIME: foodItem
-    };
-
-    var item = new items(object);
-    item.save(function(error) {
-      if (error) {
-        console.log("failed data input");
-      } else {
-        console.log("succesful data input");
-      }
-    });
-  }
-
-  function getItem(key, cb) {
-    var object = {
-      name: key
-    };
-    items.find(object, function(error, items) {
-      console.log(items);
-      cb(items);
     });
   }
 
@@ -258,20 +207,6 @@
     });
   }
 
-  function getDialogInfo(userID, dialogID, cb) {
-
-    var conditions = {
-      // INTERACTION: parseInt(dialogID)
-      INTERACTION: dialogID
-    };
-    var param = "-AUDIO";
-    items.find(conditions, param).sort({
-      TIME: 1
-    }).execFind(function(error, items) {
-      console.log(items);
-      cb(items);
-    });
-  }
 
   function getDialogList(userID, cb) {
     var conditions = {
@@ -296,21 +231,6 @@
       TIME: 1
     }).distinct(distinct, function(error, items) {
       console.log('items', items);
-      cb(items);
-    });
-  }
-
-
-  function getUserInfo(userID, cb) {
-    var conditions = {
-      USERID: userID
-      // USERID: parseInt(userID)
-    };
-    var param = "-AUDIO";
-    items.find(conditions, param).sort({
-      TIME: 1
-    }).execFind(function(error, items) {
-      console.log(items);
       cb(items);
     });
   }
@@ -350,6 +270,16 @@
     items.update(conditions, update, options, callback);
   }
 
+  function getData(conditions, order, cb) {
+    var param = "-AUDIO";
+    console.log(conditions);
+    items.find(conditions, param).sort({
+      TIME: order
+    }).execFind(function(error, data) {
+      cb(data);
+    });
+  }
+
   io.sockets.on('connection', function(socket) {
 
     // Get all data when client starts
@@ -357,18 +287,6 @@
       getAllItems(function(items) {
         socket.emit('setMarkers', items);
       });
-    });
-
-    // Deprecated
-    socket.on('setWord', function(key) {
-      getItem(key, function(item) {
-        socket.emit('getWord', item);
-      });
-    });
-
-    // Deprecated
-    socket.on('updateItem', function(name, type) {
-      updateItems(name, type);
     });
 
     // Get an audio file back to client
@@ -389,16 +307,7 @@
     socket.on('updateStatus', function(id, status) {
       updateStatus(id, status);
     });
-    socket.on('getDialogInfo', function(userID, dialogID) {
-      getDialogInfo(userID, dialogID, function(items) {
-        socket.emit('setDialogInfo', items);
-      });
-    });
-    socket.on('getUserInfo', function(userID) {
-      getUserInfo(userID, function(items) {
-        socket.emit('setUserInfo', items);
-      });
-    });
+
     socket.on('getDialogList', function(userID) {
       getDialogList(userID, function(items) {
         socket.emit('setDialogList', items);
@@ -407,6 +316,11 @@
     socket.on('getUserList', function(userID) {
       getUserList(userID, function(items) {
         socket.emit('setUserList', items);
+      });
+    });
+    socket.on('getData', function(conditions, order) {
+      getData(conditions, order, function(data) {
+        socket.emit('setData', data);
       });
     });
     socket.on('disconnect', function() {});
