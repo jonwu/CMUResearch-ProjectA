@@ -33,6 +33,7 @@ socket.on('setData', function(items){
 	clearOverlays();
 	$('.dialog-info').html('');
 	stopAudio();
+	$('.dialog-info').scrollTop(0);
 
 	showDialogOnMap(items);
 	setInfo(items);

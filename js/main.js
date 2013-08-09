@@ -35,7 +35,6 @@ function setDialogList(items) {
 
 
 function setAudio(audio, loop) {
-	console.log('loop', loop);
 	var src = "data:audio/wav;base64," + audio;
 	$('.audio').attr('src', src);
 
@@ -63,15 +62,16 @@ function setAudio(audio, loop) {
 }
 
 function stopAudio() {
-	$('.audio').bind('ended', function() {
+	if (markersArray[prevIndex]) {
 		markersArray[prevIndex].setIcon('../img/non-active.png');
-		$('.audio').unbind('ended');
-	});
-
+	}
+	$('.audio').unbind('ended');
 }
 
 function setActiveMarker() {
-	markersArray[prevIndex].setIcon('../img/non-active.png');
+	if (markersArray[prevIndex]) {
+		markersArray[prevIndex].setIcon('../img/non-active.png');
+	}
 	var index = $(currLoad).children('.loading').attr('val');
 	markersArray[index].setIcon('../img/active.png');
 	prevIndex = index;
@@ -92,14 +92,13 @@ function setInfo(items) {
 	content = generateInfo(items, 'main');
 	if (items.length) {
 		var date = new Date(items[0].TIME);
-		$('.dialog-time').text(date.toString());
+		$('.dialog-time').text(date);
 	}
 	$('.dialog-info').append(content);
 }
 
 function autoScoll() {
 	scrollHeight = $('.audio-active').position().top - $('.dialog-info').position().top + $('.dialog-info').scrollTop();
-	console.log('hieght', scrollHeight);
 	$('.dialog-info').scrollTop(scrollHeight);
 }
 
