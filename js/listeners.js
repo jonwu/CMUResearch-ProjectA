@@ -1,25 +1,7 @@
-$(function() {
-	$(window).keydown(function(e) {
-		if (e.keyCode == 81 && e.shiftKey) {
-			$('.selected').each(function(index) {
-				console.log("selected", $(this).text());
-			});
-		} else if (e.keyCode == 87 && e.shiftKey) {
-
-		}
-		if (e.ctrlKey) {
-			phraseCtrl = true;
-		}
-	});
-	$(window).keyup(function(e) {
-		phraseCtrl = false;
-	});
-
-});
-
 $(document).ready(function() {
-	$(".user-list").change(function() {
 
+	//Listen to user dropdown menu 
+	$(".user-list").change(function() {
 		clearOverlays();
 		var userID = $('.user-list').val();
 		socket.emit('getDialogList', userID);
@@ -37,6 +19,8 @@ $(document).ready(function() {
 		getData();
 
 	});
+
+	//Listen to dialog dropdown menu
 	$(".dialog-list").change(function() {
 		clearOverlays();
 		var dialogID = $('.dialog-list').val();
@@ -52,6 +36,7 @@ $(document).ready(function() {
 		getData();
 	});
 
+	//Listen to recent checkbox
 	$('.reverse:checkbox').change(
 		function() {
 			if ($(this).is(':checked')) {
@@ -61,6 +46,8 @@ $(document).ready(function() {
 			}
 			getData();
 		});
+
+	//Listen to status checkboxes
 	$('input:checkbox').change(
 		function() {
 			if ($(this).val() == 'Pending') {
@@ -87,11 +74,15 @@ $(document).ready(function() {
 			}
 			getData();
 		});
+
+	//Listen to status radios
 	$('input:radio').change(function() {
 		var id = $(this).attr('name');
 		var value = $(this).val();
 		socket.emit('updateStatus', id, value);
 	});
+
+	//Listen to add types
 	$('.type-add').on('click', function() {
 		$('.selected').each(function(index) {
 
@@ -106,6 +97,8 @@ $(document).ready(function() {
 });
 
 $(".main-marker").livequery(function() {
+
+	//Listen to status radios
 	$('input:radio').change(function() {
 		var id = $(this).attr('name');
 		var value = $(this).val();
@@ -113,10 +106,13 @@ $(".main-marker").livequery(function() {
 		console.log(value);
 		socket.emit('updateStatus', id, value);
 	});
+
+	//Listen to transcript hover
 	$('.main-transcript span').hover(function() {
 		var currWord = $(this).text();
 	}, function() {});
 
+	//Listen to transcript click
 	$('.main-transcript span').on('click', function() {
 		if (phraseCtrl) {
 			if ($(this).hasClass('phrase_selected')) {
@@ -135,6 +131,7 @@ $(".main-marker").livequery(function() {
 		}
 	});
 
+	//Listen to audio list click
 	$('.main-loading').on('click', function() {
 
 		$('.audio-active').removeClass('audio-active');
@@ -143,6 +140,8 @@ $(".main-marker").livequery(function() {
 		var _id = $(currLoad).attr('val');
 		socket.emit('getAudio', _id, true);
 	});
+
+	//Listen to audio play click
 	$('.main-play').on('click', function() {
 		$('.audio-active').removeClass('audio-active');
 		currLoad = $(this).parents('.message');
@@ -173,6 +172,7 @@ $(".main-marker").livequery(function() {
 		socket.emit('updateTranscript', id, position, content);
 	});
 
+	//Listen to audio play click
 	$('.audio').click(function() {
 		if (this.paused == false) {
 			markersArray[prevIndex].setIcon('../img/non-active.png');

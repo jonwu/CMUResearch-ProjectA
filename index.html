@@ -1,57 +1,62 @@
 <html>
+
 <head>
-	<link rel="stylesheet" type="text/css" href="css/style.css"/>
-
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-	<script type="text/javascript" src="js/jquery.livequery.js"></script>
-	<script type="text/javascript" src="js/socket.js"></script>
-
-	<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
-
-	<script type="text/javascript" src="js/listeners.js"></script>
-	<script type="text/javascript" src="js/global.js"></script>
-	<script type="text/javascript" src="js/google-maps.js"></script>
-	<script type="text/javascript" src="js/jquery.lettering.js"></script>
-	<script type="text/javascript" src="js/main.js"></script>
-	<title></title>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <title></title>
 </head>
-<body>
-	<div class="wrapper">
-		<div id="map-canvas" style="width: 100%; height: 100%; position: absolute;"></div>
-		<div class="filter">
-			<div class="filter-header">
-				<audio class="audio" preload="auto" autoplay="autoplay" controls></audio>
-			</div>
-			<div class="filter-body">
-				<div class="lists">
-					<label for="user-list">User List</label>
-					<select class="user-list">
-						<option value="user-all">All</option>
-					</select>
-					<label for="check-status">Pending</label>
-					<input class="Pending" value="Pending" type="checkbox">
-					<label for="check-status">Processing</label>
-					<input class="Processing" value="Processing" type="checkbox">
-					<label for="check-status">Verified</label>
-					<input class="Verified" value="Verified" type="checkbox">
-					<br>
-					<label for="dialog-list">Dialog List</label>
-					<select class="dialog-list">
-						<option value="dialog-all">All</option>
-					</select>
-					<label for="dialog-list">Most Recent</label>
-					<input class="reverse" value="reverse" type="checkbox">
-					<div class="dialog-time" style="padding-top: 5px"></div>
-				</div>
 
-				<div class="dialog-info"></div>
-			</div>
-		</div>
-		<div class="edit">
-			<input class="type-input" type="text">
-			<button class="type-add">Add Type</button>
-		</div>
-	</div>
+<body>
+    <div class="wrapper">
+        <div id="map-canvas" style="width: 100%; height: 100%; position: absolute;"></div>
+        <div class="filter">
+            <div class="filter-header">
+                <audio class="audio" preload="auto" autoplay="autoplay" controls></audio>
+            </div>
+            <div class="filter-body">
+                <div class="lists">
+
+                    <label for="user-list">User List</label>
+                    <select class="user-list">
+                        <option value="user-all">All</option>
+                    </select>
+
+                    <label for="check-status">Pending</label>
+                    <input class="Pending" value="Pending" type="checkbox">
+                    <label for="check-status">Processing</label>
+                    <input class="Processing" value="Processing" type="checkbox">
+                    <label for="check-status">Verified</label>
+                    <input class="Verified" value="Verified" type="checkbox">
+                    <br>
+
+                    <label for="dialog-list">Dialog List</label>
+                    <select class="dialog-list">
+                        <option value="dialog-all">All</option>
+                    </select>
+                    <label for="dialog-list">Most Recent</label>
+
+
+                    <input class="reverse" value="reverse" type="checkbox">
+                    <div class="dialog-time" style="padding-top: 5px"></div>
+                </div>
+
+                <div class="dialog-info"></div>
+            </div>
+        </div>
+        <div class="edit">
+            <input class="type-input" type="text">
+            <button class="type-add">Add Type</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/jquery.livequery.js"></script>
+    <script type="text/javascript" src="js/socket.js"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
+    <script type="text/javascript" src="js/listeners.js"></script>
+    <script type="text/javascript" src="js/global.js"></script>
+    <script type="text/javascript" src="js/google-maps.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
 </body>
+
 </html>

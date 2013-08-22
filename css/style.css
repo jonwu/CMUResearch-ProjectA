@@ -1,28 +1,22 @@
-body{
+body {
 	padding: 0 auto;
 	margin: 0 auto;
-
-
 }
 
 .word_split span:hover {
-    font-weight:bold;
-    color: red;
+	font-weight: bold;
+	color: red;
 }
 
-.wrapper{
+.wrapper {
 	height: 100%;
 	width: 100%;
 	min-width: 1024;
-
 }
 
-.filter{
+.filter {
 	padding: 15px;
-	/*max-width: 50%;*/
-	/*min-width: 439px;*/
 	min-width: 410px;
-	/*width: 50%;*/
 	height: 80%;
 	background-color: white;
 	border: 1px solid #CCC;
@@ -30,127 +24,121 @@ body{
 	z-index: 2;
 	left: 50px;
 	top: 8%;
-	-moz-box-shadow: 3px 3px 12px 1px #888;
 	-webkit-box-shadow: 3px 3px 12px 1px #888;
-	box-shadow: 3px 3px 12px 1px #888
+	box-shadow: 3px 3px 12px 1px #888;
 }
-.filter-header{
+
+.filter-header {
 	height: 10%;
-	/*margin-bottom: 5px;*/
 	width: 100%;
 }
-.filter-body{
+
+.filter-body {
 	width: 100%;
 	height: 80%;
-
 }
-.filter-body .dialog-info{
+
+.filter-body .dialog-info {
 	overflow: auto;
 	height: 90%;
-	/*margin-top: 15px;*/
-}
-.filter-body .lists{
-	/*height: 20%;*/
 }
 
-.annotation{
-
+.annotation {
 	width: 96%;
 	padding: 2%;
-	background:rgba(255,0,0,0.3);
+	background: rgba(255, 0, 0, 0.3);
 }
-.annotation input{
+
+.annotation input {
 	padding: 2px;
-	
 }
-.annotation button{
-	
-}
-.annotation h4{
+
+.annotation h4 {
 	display: inline;
-	
 }
-.marker{
-	/*width: 330px;*/
+
+.marker {
 	min-width: 300px;
 }
-.marker .loading{
-	width: 14%;
-	display:inline-block;
-	padding-bottom: 1000px;
-    margin-bottom: -1000px;
 
+.marker .loading {
+	width: 14%;
+	display: inline-block;
+	padding-bottom: 1000px;
+	margin-bottom: -1000px;
 }
-.marker .transcript{
+
+.marker .transcript {
 	max-width: 248px;
 	width: 63%;
-	display:inline-block;
+	display: inline-block;
 	padding-bottom: 1000px;
-    margin-bottom: -1000px;
-	
-}
-.marker .checkbox{
-	width: 23%;
-	display:inline-block;
-	padding-bottom: 1000px;
-    margin-bottom: -1000px;
+	margin-bottom: -1000px;
 }
 
-.marker .message{
+.marker .checkbox {
+	width: 23%;
+	display: inline-block;
+	padding-bottom: 1000px;
+	margin-bottom: -1000px;
+}
+
+.marker .message {
 	overflow: hidden;
-	/*clear: both;*/
-	/*height: 70px;*/
 	width: 100%;
-	/*width: 500px;*/
 	padding-bottom: 15px;
 	padding-top: 15px;
 	border-bottom: 1px solid gray;
 }
+
 .main-transcript span:hover {
-    font-weight:bold;
-    background-color: yellow;
-    color: black;
+	font-weight: bold;
+	background-color: yellow;
+	color: black;
 }
-.transcript .location{
-	/*color: orange;*/
+
+.transcript .location {
 	font-weight: bold;
 }
-.transcript .food{
-	/*color: green;*/
+
+.transcript .food {
 	font-weight: bold;
 }
-.transcript .type{
+
+.transcript .type {
 	color: green;
 }
-.transcript .subtype{
+
+.transcript .subtype {
 	color: red;
 }
-.selected{
-	background-color: rgba(255,255,0,0.5);
+
+.selected {
+	background-color: rgba(255, 255, 0, 0.5);
 	font-weight: bold;
 }
 
-.phrase_selected{
-	background-color: rgba(0,255,0,0.5);
+.phrase_selected {
+	background-color: rgba(0, 255, 0, 0.5);
 	font-weight: bold;
 }
-.edit{
 
+.edit {
 	padding: 20px;
 	max-width: 50%;
 	width: 240px;
-	/*height: 309px;*/
-	background-color: rgba(0,0,0,0.5);;
+	background-color: rgba(0, 0, 0, 0.5);
 	border: 1px solid #CCC;
 	border-right: 0;
 	position: absolute;
 	z-index: 2;
 	right: 0;
 	top: 35px;
-	-moz-box-shadow: 3px 3px 12px 1px #888;
+
 	-webkit-box-shadow: 3px 3px 12px 1px #888;
-	box-shadow: 3px 3px 12px 1px #888
+	box-shadow: 3px 3px 12px 1px #888;
 }
-.audio-active{
+
+.audio-active {
 	background-color: #D8E5F1;
 }
